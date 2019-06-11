@@ -44,10 +44,10 @@ func main() {
 	}
 
 	// Endpoint 생성
-	userCreateEndpoint := userApi.MakeCreateEndpoint(userService)
+	userSignUpEndpoint := userApi.MakeSignUpEndpoint(userService)
 
 	userEndpoints := userApi.Endpoints{
-		CreateEndpoint: userCreateEndpoint,
+		SignUpEndpoint: userSignUpEndpoint,
 	}
 
 	userRoute := userApi.MakeHTTPHandler(userEndpoints, logger)

@@ -6,31 +6,33 @@ import (
 	"github.com/go-kit/kit/endpoint"
 )
 
-// CreateRequest ...
-type CreateRequest struct {
+// SignUpRequest ...
+type SignUpRequest struct {
 	UserID     int64  `json:"userId"`
 	RemoteAddr string `json:"remoteAddr"`
 
-	Email    *string `json:"email"`
-	Password *string `json:"password"`
+	Email     *string `json:"email"`
+	Password  *string `json:"password"`
+	FirstName *string `json:"firstName"`
+	LastName  *string `json:"lastName"`
 }
 
-// CreateResponse ...
-type CreateResponse struct {
+// SignUpResponse ...
+type SignUpResponse struct {
 	ID int64 `json:"id"`
 }
 
 // Endpoints ...
 type Endpoints struct {
-	CreateEndpoint endpoint.Endpoint
+	SignUpEndpoint endpoint.Endpoint
 }
 
-// MakeCreateEndpoint ...
-func MakeCreateEndpoint(s Service) endpoint.Endpoint {
+// MakeSignUpEndpoint ...
+func MakeSignUpEndpoint(s Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		req := request.(CreateRequest)
+		req := request.(SignUpRequest)
 
-		response := s.Create(req)
+		response := s.SignUp(req)
 		return response, nil
 	}
 }

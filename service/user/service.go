@@ -13,7 +13,7 @@ import (
 
 // Service ...
 type Service interface {
-	Create(r CreateRequest) *model.JSONResponse
+	SignUp(r SignUpRequest) *model.JSONResponse
 }
 
 type service struct {
@@ -32,11 +32,14 @@ func NewService(ctx context.Context, logger log.Logger, userRepo user.Repository
 	}
 }
 
-// Create 유저 회원가입
-func (s service) Create(r CreateRequest) *model.JSONResponse {
+// SignUp 유저 회원가입
+func (s service) SignUp(r SignUpRequest) *model.JSONResponse {
 	response := model.JSONResponse{}
 
-	if r.Email == nil || r.Password == nil {
+	if (r.Email == nil || util.IsEmpty(*r.Email)) ||
+		(r.Password == nil || util.IsEmpty(*r.Password)) ||
+		(r.FirstName == nil || util.IsEmpty(*r.FirstName)) ||
+		(r.LastName == nil || util.IsEmpty(*r.LastName)) {
 		response.Error = util.MakeError(consts.ErrorBadRequestCode, "입력 정보를 확인해주세요.", http.StatusBadRequest)
 		return &response
 	}
