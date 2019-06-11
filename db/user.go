@@ -1,13 +1,10 @@
 package db
 
 import (
-	"net/http"
 	"time"
 
-	"github.com/TylerGrey/lotte_server/lib/consts"
 	"github.com/TylerGrey/lotte_server/lib/model"
 
-	"github.com/TylerGrey/lotte_server/util"
 	"github.com/jinzhu/gorm"
 )
 
@@ -18,6 +15,7 @@ type User struct {
 	Password  string `json:"password"`
 	FirstName string `json:"first_name"`
 	LastName  string `json:"last_name"`
+	Role      string `json:"role"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	DeletedAt *time.Time
@@ -25,8 +23,10 @@ type User struct {
 
 // UserRepository User 레포지터리 인터페이스
 type UserRepository interface {
-	// 유저등록
-	Create(user User) chan model.DbResult
+	// 유저 등록
+	Create(user User) model.DbChannel
+	// 이메일로 유저 조회
+	FindByEmail(email string) model.DbChannel
 }
 
 // userRepository 인터페이스 구조체
@@ -42,16 +42,39 @@ func NewUserRepository(masterSession *gorm.DB) UserRepository {
 }
 
 // Create 유저 생성
-func (r userRepository) Create(user User) chan model.DbResult {
-	storeChannel := make(chan model.DbResult)
+func (r userRepository) Create(user User) model.DbChannel {
+	storeChannel := make(model.DbChannel)
 	go func() {
 		result := model.DbResult{}
 		err := r.session.Table("user").Create(&user).Error
 		if err != nil {
-			result.Err = util.MakeError(consts.ErrorDatabaseCode, err.Error(), http.StatusInternalServerError)
+			result.Err = err
 		}
 
 		result.Data = user.ID
+		storeChannel <- result
+		close(storeChannel)
+	}()
+
+	return storeChannel
+}
+
+// FindByEmail 이메일로 유저 조회
+func (r userRepository) FindByEmail(email string) model.DbChannel {
+	storeChannel := make(model.DbChannel)
+	go func() {
+		result := model.DbResult{}
+		user := User{}
+
+		err := r.session.
+			Table("user").
+			Where("email = ?", email).
+			Find(&user).Error
+		if err != nil {
+			result.Err = err
+		}
+
+		result.Data = user
 		storeChannel <- result
 		close(storeChannel)
 	}()

@@ -14,10 +14,20 @@ func _makeErrorCode(code int32, err model.AppError) *model.AppError {
 			err.ErrorCode = consts.ErrorBadRequestCode
 			err.ErrorMsg = consts.ErrorBadRequestMsg
 		}
-	case consts.ErrorDatabaseCode:
+	case consts.ErrorCreateUserCode:
 		{
-			err.ErrorCode = consts.ErrorDatabaseCode
-			err.ErrorMsg = consts.ErrorDatabaseMsg
+			err.ErrorCode = consts.ErrorCreateUserCode
+			err.ErrorMsg = consts.ErrorCreateUserMsg
+		}
+	case consts.ErrorFindUserCode:
+		{
+			err.ErrorCode = consts.ErrorFindUserCode
+			err.ErrorMsg = consts.ErrorFindUserMsg
+		}
+	case consts.ErrorValidatePasswordCode:
+		{
+			err.ErrorCode = consts.ErrorValidatePasswordCode
+			err.ErrorMsg = consts.ErrorValidatePasswordMsg
 		}
 	default:
 	}

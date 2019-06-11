@@ -45,9 +45,11 @@ func main() {
 
 	// Endpoint 설정
 	userSignUpEndpoint := userApi.MakeSignUpEndpoint(userService)
+	userSignInEndpoint := userApi.MakeSignInEndpoint(userService)
 
 	userEndpoints := userApi.Endpoints{
 		SignUpEndpoint: userSignUpEndpoint,
+		SignInEndpoint: userSignInEndpoint,
 	}
 
 	// 핸들러 설정

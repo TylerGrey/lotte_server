@@ -35,14 +35,31 @@ func MakeHTTPHandler(endpoints Endpoints, logger kitlog.Logger) http.Handler {
 		opts...,
 	)
 
+	signInHandler := httptransport.NewServer(
+		endpoints.SignInEndpoint,
+		decodeSignInRequest,
+		encodeResponse,
+		opts...,
+	)
+
 	m := mux.NewRouter()
 	m.Handle("/api/user/signUp", signUpHandler).Methods("POST")
+	m.Handle("/api/user/signIn", signInHandler).Methods("POST")
 
 	return m
 }
 
 func decodeSignUpRequest(_ context.Context, r *http.Request) (interface{}, error) {
 	request := SignUpRequest{}
+	request.RemoteAddr = r.RemoteAddr
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		return nil, err
+	}
+	return request, nil
+}
+
+func decodeSignInRequest(_ context.Context, r *http.Request) (interface{}, error) {
+	request := SignInRequest{}
 	request.RemoteAddr = r.RemoteAddr
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 		return nil, err
