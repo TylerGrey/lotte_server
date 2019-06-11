@@ -11,7 +11,7 @@ import (
 
 // InitializeDatabase 데이타베이스 초기생성
 func InitializeDatabase(dbName string) (*gorm.DB, error) {
-	mysqlMasterConnStr := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local", os.Getenv("RDS_USERNAME"), os.Getenv("RDS_PASSWORD"), os.Getenv("RDS_MASTER_HOSTNAME"), os.Getenv("RDS_PORT"), dbName)
+	mysqlMasterConnStr := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local", os.Getenv("RDS_USERNAME"), os.Getenv("RDS_PASSWORD"), os.Getenv("RDS_HOSTNAME"), os.Getenv("RDS_PORT"), dbName)
 	masterDb, err := gorm.Open("mysql", mysqlMasterConnStr)
 	if err != nil {
 		return nil, err
