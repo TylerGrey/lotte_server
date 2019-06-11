@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/TylerGrey/lotte_server/model"
+	"github.com/TylerGrey/lotte_server/lib/model"
 	"github.com/TylerGrey/lotte_server/util"
 	kitlog "github.com/go-kit/kit/log"
 	httptransport "github.com/go-kit/kit/transport/http"

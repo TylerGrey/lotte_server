@@ -1,12 +1,12 @@
-package user
+package db
 
 import (
 	"net/http"
 	"time"
 
 	"github.com/TylerGrey/lotte_server/lib/consts"
+	"github.com/TylerGrey/lotte_server/lib/model"
 
-	"github.com/TylerGrey/lotte_server/model"
 	"github.com/TylerGrey/lotte_server/util"
 	"github.com/jinzhu/gorm"
 )
@@ -16,13 +16,15 @@ type User struct {
 	ID        int64  `json:"id" sql:"AUTO_INCREMENT" gorm:"primary_key"`
 	Email     string `json:"email"`
 	Password  string `json:"password"`
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	DeletedAt *time.Time
 }
 
-// Repository User 레포지터리 인터페이스
-type Repository interface {
+// UserRepository User 레포지터리 인터페이스
+type UserRepository interface {
 	// 유저등록
 	Create(user User) chan model.DbResult
 }
@@ -33,7 +35,7 @@ type userRepository struct {
 }
 
 // NewUserRepository ...
-func NewUserRepository(masterSession *gorm.DB) Repository {
+func NewUserRepository(masterSession *gorm.DB) UserRepository {
 	return &userRepository{
 		session: masterSession,
 	}

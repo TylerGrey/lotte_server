@@ -4,8 +4,7 @@ import (
 	"net/http"
 
 	"github.com/TylerGrey/lotte_server/lib/consts"
-
-	"github.com/TylerGrey/lotte_server/model"
+	"github.com/TylerGrey/lotte_server/lib/model"
 )
 
 func _makeErrorCode(code int32, err model.AppError) *model.AppError {

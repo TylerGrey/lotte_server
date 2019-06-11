@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/TylerGrey/lotte_server/model"
+	"github.com/TylerGrey/lotte_server/lib/model"
 	"github.com/go-kit/kit/log"
 )
 

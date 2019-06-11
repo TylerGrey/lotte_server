@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/TylerGrey/lotte_server/db"
 	"github.com/TylerGrey/lotte_server/lib/mysql"
-	"github.com/TylerGrey/lotte_server/model/user"
 	userApi "github.com/TylerGrey/lotte_server/service/user"
 	"github.com/go-kit/kit/log"
 	"github.com/sebest/xff"
@@ -16,6 +16,7 @@ import (
 var logger log.Logger
 
 func init() {
+	// Logger 초기화
 	logger = log.NewLogfmtLogger(log.NewSyncWriter(os.Stderr))
 	logger = log.With(logger, "ts", log.DefaultTimestamp, "caller", log.DefaultCaller)
 
@@ -26,30 +27,30 @@ func init() {
 func main() {
 	ctx := context.Background()
 	httpAddr := flag.String("http.addr", ":8080", "HTTP listen address")
-	flag.Parse()
 
 	// DB 초기화
-	userDB, err := mysql.InitializeDatabase(os.Getenv("RDS_USER_DB_NAME"))
+	dbCli, err := mysql.InitializeDatabase(os.Getenv("RDS_DB_NAME"))
 	if err != nil {
 		logger.Log("USER_DB_ERROR", err.Error())
 		panic(err)
 	}
-	userRepo := user.NewUserRepository(userDB)
+	userRepo := db.NewUserRepository(dbCli)
 
-	// API 생성
+	// API 설정
 	var userService userApi.Service
 	{
 		userService = userApi.NewService(ctx, logger, userRepo)
 		userService = userApi.NewLoggingService(log.With(logger, "api", "user"), userService)
 	}
 
-	// Endpoint 생성
+	// Endpoint 설정
 	userSignUpEndpoint := userApi.MakeSignUpEndpoint(userService)
 
 	userEndpoints := userApi.Endpoints{
 		SignUpEndpoint: userSignUpEndpoint,
 	}
 
+	// 핸들러 설정
 	userRoute := userApi.MakeHTTPHandler(userEndpoints, logger)
 
 	xffmw, _ := xff.Default()
@@ -61,6 +62,7 @@ func main() {
 }
 
 func accessControl(h http.Handler) http.Handler {
+	// 크로스 도메인 설정
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")

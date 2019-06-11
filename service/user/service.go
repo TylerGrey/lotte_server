@@ -4,9 +4,9 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/TylerGrey/lotte_server/db"
 	"github.com/TylerGrey/lotte_server/lib/consts"
-	"github.com/TylerGrey/lotte_server/model"
-	"github.com/TylerGrey/lotte_server/model/user"
+	"github.com/TylerGrey/lotte_server/lib/model"
 	"github.com/TylerGrey/lotte_server/util"
 	"github.com/go-kit/kit/log"
 )
@@ -19,11 +19,11 @@ type Service interface {
 type service struct {
 	ctx      context.Context
 	logger   log.Logger
-	userRepo user.Repository
+	userRepo db.UserRepository
 }
 
 // NewService ...
-func NewService(ctx context.Context, logger log.Logger, userRepo user.Repository) Service {
+func NewService(ctx context.Context, logger log.Logger, userRepo db.UserRepository) Service {
 	return &service{
 		ctx:    ctx,
 		logger: logger,
@@ -46,9 +46,11 @@ func (s service) SignUp(r SignUpRequest) *model.JSONResponse {
 
 	pw := util.GenerateFromPassword(*r.Password)
 
-	m := user.User{
-		Email:    *r.Email,
-		Password: pw,
+	m := db.User{
+		Email:     *r.Email,
+		Password:  pw,
+		FirstName: *r.FirstName,
+		LastName:  *r.LastName,
 	}
 	if result := <-s.userRepo.Create(m); result.Err != nil {
 		response.Error = result.Err
