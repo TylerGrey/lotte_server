@@ -1,4 +1,4 @@
-package board
+package reservation
 
 import (
 	"context"
@@ -6,7 +6,6 @@ import (
 
 	"github.com/TylerGrey/lotte_server/util"
 
-	"github.com/TylerGrey/lotte_server/db"
 	"github.com/TylerGrey/lotte_server/lib/jwt"
 	"github.com/TylerGrey/lotte_server/lib/model"
 
@@ -17,9 +16,6 @@ import (
 type ListRequest struct {
 	UserID     int64  `json:"userId"`
 	RemoteAddr string `json:"remoteAddr"`
-
-	Page  int32 `json:"page"`
-	Limit int32 `json:"total"`
 }
 
 // AddRequest ...
@@ -27,12 +23,17 @@ type AddRequest struct {
 	UserID     int64  `json:"userId"`
 	RemoteAddr string `json:"remoteAddr"`
 
-	Title string `json:"title"`
+	RoomID        int64   `json:"roomId"`
+	Users         []int64 `json:"userIds"`
+	StartDatetime string  `json:"startDatetime"`
+	EndDatetime   string  `json:"endDatetime"`
+	Title         string  `json:"title"`
+	Attachments   string  `json:"attachments"`
 }
 
 // ListResponse ...
 type ListResponse struct {
-	List []*db.Board `json:"list"`
+	List []*model.ReservationList `json:"list"`
 }
 
 // AddResponse ...

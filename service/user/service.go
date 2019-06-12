@@ -20,6 +20,7 @@ import (
 type Service interface {
 	SignUp(r SignUpRequest) *model.JSONResponse
 	SignIn(r SignInRequest) *model.JSONResponse
+	List(r ListRequest) *model.JSONResponse
 }
 
 type service struct {
@@ -55,6 +56,7 @@ func (s service) SignUp(r SignUpRequest) *model.JSONResponse {
 		Email:    r.Email,
 		Password: pw,
 		Name:     r.Name,
+		Role:     consts.USER_ROLE,
 	}
 	if result := <-s.userRepo.Create(m); result.Err != nil {
 		s.logger.Log("UER_CREATE_ERROR", result.Err.Error())
@@ -105,6 +107,22 @@ func (s service) SignIn(r SignInRequest) *model.JSONResponse {
 		Name:  user.Name,
 		Role:  user.Role,
 		Token: token,
+	}
+
+	return &response
+}
+
+// List 로그인
+func (s service) List(r ListRequest) *model.JSONResponse {
+	response := model.JSONResponse{}
+
+	if result := <-s.userRepo.List(r.Page, r.Limit); result.Err != nil {
+		s.logger.Log("UER_LIST_ERROR", result.Err.Error())
+		response.Error = util.MakeError(consts.ErrorValidatePasswordCode, "유저 목록을 찾을 수 없습니다.", http.StatusInternalServerError)
+	} else {
+		response.Result.Data = ListResponse{
+			List: result.Data.([]*db.User),
+		}
 	}
 
 	return &response

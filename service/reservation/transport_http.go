@@ -1,10 +1,9 @@
-package user
+package reservation
 
 import (
 	"context"
 	"encoding/json"
 	"net/http"
-	"strconv"
 
 	"github.com/TylerGrey/lotte_server/lib/model"
 	"github.com/TylerGrey/lotte_server/util"
@@ -29,61 +28,39 @@ func MakeHTTPHandler(endpoints Endpoints, logger kitlog.Logger) http.Handler {
 		httptransport.ServerErrorLogger(logger),
 	}
 
-	signUpHandler := httptransport.NewServer(
-		endpoints.SignUpEndpoint,
-		decodeSignUpRequest,
-		encodeResponse,
-		opts...,
-	)
-
-	signInHandler := httptransport.NewServer(
-		endpoints.SignInEndpoint,
-		decodeSignInRequest,
-		encodeResponse,
-		opts...,
-	)
-
 	ListHandler := httptransport.NewServer(
 		endpoints.ListEndpoint,
 		decodeListRequest,
 		encodeResponse,
 		opts...,
 	)
+	AddHandler := httptransport.NewServer(
+		endpoints.AddEndpoint,
+		decodeAddRequest,
+		encodeResponse,
+		opts...,
+	)
 
 	m := mux.NewRouter()
-	m.Handle("/api/user/signUp", signUpHandler).Methods("POST")
-	m.Handle("/api/user/signIn", signInHandler).Methods("POST")
-	m.Handle("/api/user/list", ListHandler).Methods("GET")
+	m.Handle("/api/reservation/list", ListHandler).Methods("GET")
+	m.Handle("/api/reservation/add", AddHandler).Methods("POST")
 
 	return m
 }
 
-func decodeSignUpRequest(_ context.Context, r *http.Request) (interface{}, error) {
-	request := SignUpRequest{}
-	request.RemoteAddr = r.RemoteAddr
-	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
-		return nil, err
-	}
-	return request, nil
-}
-
-func decodeSignInRequest(_ context.Context, r *http.Request) (interface{}, error) {
-	request := SignInRequest{}
-	request.RemoteAddr = r.RemoteAddr
-	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
-		return nil, err
-	}
-	return request, nil
-}
-
 func decodeListRequest(_ context.Context, r *http.Request) (interface{}, error) {
-	page, _ := strconv.Atoi(r.URL.Query().Get("page"))
-	limit, _ := strconv.Atoi(r.URL.Query().Get("limit"))
-	request := ListRequest{
-		Page:  int32(page),
-		Limit: int32(limit),
-	}
+	request := ListRequest{}
 	request.RemoteAddr = r.RemoteAddr
+
+	return request, nil
+}
+
+func decodeAddRequest(_ context.Context, r *http.Request) (interface{}, error) {
+	request := AddRequest{}
+	request.RemoteAddr = r.RemoteAddr
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		return nil, err
+	}
 
 	return request, nil
 }

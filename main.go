@@ -10,7 +10,8 @@ import (
 
 	"github.com/TylerGrey/lotte_server/db"
 	"github.com/TylerGrey/lotte_server/lib/mysql"
-	boardApi "github.com/TylerGrey/lotte_server/service/board"
+	reservationApi "github.com/TylerGrey/lotte_server/service/reservation"
+	roomApi "github.com/TylerGrey/lotte_server/service/room"
 	userApi "github.com/TylerGrey/lotte_server/service/user"
 	"github.com/go-kit/kit/log"
 	"github.com/sebest/xff"
@@ -38,7 +39,8 @@ func main() {
 		panic(err)
 	}
 	userRepo := db.NewUserRepository(dbCli)
-	boardRepo := db.NewBoardRepository(dbCli)
+	roomRepo := db.NewRoomRepository(dbCli)
+	reservationRepo := db.NewReservationRepository(dbCli)
 
 	// API 설정
 	var userService userApi.Service
@@ -47,41 +49,63 @@ func main() {
 		userService = userApi.NewLoggingService(log.With(logger, "api", "user"), userService)
 	}
 
-	var boardService boardApi.Service
+	var roomService roomApi.Service
 	{
-		boardService = boardApi.NewService(ctx, logger, boardRepo)
-		boardService = boardApi.NewLoggingService(log.With(logger, "api", "board"), boardService)
+		roomService = roomApi.NewService(ctx, logger, roomRepo)
+		roomService = roomApi.NewLoggingService(log.With(logger, "api", "room"), roomService)
+	}
+
+	var reservationService reservationApi.Service
+	{
+		reservationService = reservationApi.NewService(ctx, logger, reservationRepo)
+		reservationService = reservationApi.NewLoggingService(log.With(logger, "api", "reservation"), reservationService)
 	}
 
 	// Endpoint 설정
 	userSignUpEndpoint := userApi.MakeSignUpEndpoint(userService)
 	userSignInEndpoint := userApi.MakeSignInEndpoint(userService)
+	userListEndpoint := userApi.MakeListEndpoint(userService)
 
 	userEndpoints := userApi.Endpoints{
 		SignUpEndpoint: userSignUpEndpoint,
 		SignInEndpoint: userSignInEndpoint,
+		ListEndpoint:   userListEndpoint,
 	}
 
-	boardListEndpoint := boardApi.MakeListEndpoint(boardService)
-	var boardAddEndpoint endpoint.Endpoint
+	roomListEndpoint := roomApi.MakeListEndpoint(roomService)
+	var roomAddEndpoint endpoint.Endpoint
 	{
-		boardAddEndpoint = boardApi.MakeAddEndpoint(boardService)
-		boardAddEndpoint = boardApi.MakeAuthVerifyMiddleware()(boardAddEndpoint)
+		roomAddEndpoint = roomApi.MakeAddEndpoint(roomService)
+		roomAddEndpoint = roomApi.MakeAuthVerifyMiddleware()(roomAddEndpoint)
 	}
 
-	boardEndpoints := boardApi.Endpoints{
-		ListEndpoint: boardListEndpoint,
-		AddEndpoint:  boardAddEndpoint,
+	roomEndpoints := roomApi.Endpoints{
+		ListEndpoint: roomListEndpoint,
+		AddEndpoint:  roomAddEndpoint,
+	}
+
+	reservationListEndpoint := reservationApi.MakeListEndpoint(reservationService)
+	var reservationAddEndpoint endpoint.Endpoint
+	{
+		reservationAddEndpoint = reservationApi.MakeAddEndpoint(reservationService)
+		reservationAddEndpoint = reservationApi.MakeAuthVerifyMiddleware()(reservationAddEndpoint)
+	}
+
+	reservationEndpoints := reservationApi.Endpoints{
+		ListEndpoint: reservationListEndpoint,
+		AddEndpoint:  reservationAddEndpoint,
 	}
 
 	// 핸들러 설정
 	userRoute := userApi.MakeHTTPHandler(userEndpoints, logger)
-	boardRoute := boardApi.MakeHTTPHandler(boardEndpoints, logger)
+	roomRoute := roomApi.MakeHTTPHandler(roomEndpoints, logger)
+	reservationRoute := reservationApi.MakeHTTPHandler(reservationEndpoints, logger)
 
 	xffmw, _ := xff.Default()
 	mux := http.NewServeMux()
 	mux.Handle("/api/user/", xffmw.Handler(userRoute))
-	mux.Handle("/api/board/", xffmw.Handler(boardRoute))
+	mux.Handle("/api/room/", xffmw.Handler(roomRoute))
+	mux.Handle("/api/reservation/", xffmw.Handler(reservationRoute))
 	http.Handle("/", accessControl(mux))
 
 	logger.Log(http.ListenAndServe(*httpAddr, nil))

@@ -3,6 +3,8 @@ package user
 import (
 	"context"
 
+	"github.com/TylerGrey/lotte_server/db"
+
 	"github.com/go-kit/kit/endpoint"
 )
 
@@ -25,6 +27,15 @@ type SignInRequest struct {
 	Password string `json:"password"`
 }
 
+// ListRequest ...
+type ListRequest struct {
+	UserID     int64  `json:"userId"`
+	RemoteAddr string `json:"remoteAddr"`
+
+	Page  int32 `json:"page"`
+	Limit int32 `json:"limit"`
+}
+
 // SignUpResponse ...
 type SignUpResponse struct {
 	ID int64 `json:"id"`
@@ -38,10 +49,16 @@ type SignInResponse struct {
 	Role  string `json:"role"`
 }
 
+// ListResponse ...
+type ListResponse struct {
+	List []*db.User `json:"list"`
+}
+
 // Endpoints ...
 type Endpoints struct {
 	SignUpEndpoint endpoint.Endpoint
 	SignInEndpoint endpoint.Endpoint
+	ListEndpoint   endpoint.Endpoint
 }
 
 // MakeSignUpEndpoint ...
@@ -60,6 +77,16 @@ func MakeSignInEndpoint(s Service) endpoint.Endpoint {
 		req := request.(SignInRequest)
 
 		response := s.SignIn(req)
+		return response, nil
+	}
+}
+
+// MakeListEndpoint ...
+func MakeListEndpoint(s Service) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req := request.(ListRequest)
+
+		response := s.List(req)
 		return response, nil
 	}
 }

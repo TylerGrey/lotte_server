@@ -1,4 +1,4 @@
-package board
+package reservation
 
 import (
 	"encoding/json"

@@ -1,4 +1,4 @@
-package board
+package room
 
 import (
 	"context"
@@ -41,10 +41,24 @@ func MakeHTTPHandler(endpoints Endpoints, logger kitlog.Logger) http.Handler {
 		encodeResponse,
 		opts...,
 	)
+	UpdateHandler := httptransport.NewServer(
+		endpoints.UpdateEndpoint,
+		decodeUpdateRequest,
+		encodeResponse,
+		opts...,
+	)
+	DeleteHandler := httptransport.NewServer(
+		endpoints.DeleteEndpoint,
+		decodeDeleteRequest,
+		encodeResponse,
+		opts...,
+	)
 
 	m := mux.NewRouter()
-	m.Handle("/api/board/list", ListHandler).Methods("GET")
-	m.Handle("/api/board/add", AddHandler).Methods("POST")
+	m.Handle("/api/room/list", ListHandler).Methods("GET")
+	m.Handle("/api/room/add", AddHandler).Methods("POST")
+	m.Handle("/api/room/update", UpdateHandler).Methods("POST")
+	m.Handle("/api/room/delete", DeleteHandler).Methods("POST")
 
 	return m
 }
@@ -63,6 +77,26 @@ func decodeListRequest(_ context.Context, r *http.Request) (interface{}, error) 
 
 func decodeAddRequest(_ context.Context, r *http.Request) (interface{}, error) {
 	request := AddRequest{}
+	request.RemoteAddr = r.RemoteAddr
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		return nil, err
+	}
+
+	return request, nil
+}
+
+func decodeUpdateRequest(_ context.Context, r *http.Request) (interface{}, error) {
+	request := UpdateRequest{}
+	request.RemoteAddr = r.RemoteAddr
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		return nil, err
+	}
+
+	return request, nil
+}
+
+func decodeDeleteRequest(_ context.Context, r *http.Request) (interface{}, error) {
+	request := DeleteRequest{}
 	request.RemoteAddr = r.RemoteAddr
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 		return nil, err

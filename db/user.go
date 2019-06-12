@@ -22,9 +22,8 @@ type User struct {
 
 // UserRepository User 레포지터리 인터페이스
 type UserRepository interface {
-	// 유저 등록
 	Create(user User) model.DbChannel
-	// 이메일로 유저 조회
+	List(page int32, limit int32) model.DbChannel
 	FindByEmail(email string) model.DbChannel
 }
 
@@ -51,6 +50,26 @@ func (r userRepository) Create(user User) model.DbChannel {
 		}
 
 		result.Data = user.ID
+		storeChannel <- result
+		close(storeChannel)
+	}()
+
+	return storeChannel
+}
+
+// List 유저 리스트 조회
+func (r userRepository) List(page int32, limit int32) model.DbChannel {
+	storeChannel := make(model.DbChannel)
+	go func() {
+		result := model.DbResult{}
+		users := []*User{}
+
+		err := r.session.Table("user").Scan(&users).Error
+		if err != nil {
+			result.Err = err
+		}
+
+		result.Data = users
 		storeChannel <- result
 		close(storeChannel)
 	}()
