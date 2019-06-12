@@ -35,19 +35,17 @@ type ResponseData struct {
 
 // Jwt 사용자 JWT 정보
 type Jwt struct {
-	UserID    int64  `json:"userId"`
-	Email     string `json:"email"`
-	FirstName string `json:"firstName"`
-	LastName  string `json:"lastName"`
-	Role      string `json:"role"`
+	UserID int64  `json:"userId"`
+	Email  string `json:"email"`
+	Name   string `json:"Name"`
+	Role   string `json:"role"`
 }
 
 // JwtClaims ...
 type JwtClaims struct {
-	UserID    int64  `json:"userId"`
-	Email     string `json:"email"`
-	FirstName string `json:"firstName"`
-	LastName  string `json:"lastName"`
-	Role      string `json:"role"`
+	UserID int64  `json:"userId"`
+	Email  string `json:"email"`
+	Name   string `json:"Name"`
+	Role   string `json:"role"`
 	jwt.StandardClaims
 }

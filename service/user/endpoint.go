@@ -11,10 +11,9 @@ type SignUpRequest struct {
 	UserID     int64  `json:"userId"`
 	RemoteAddr string `json:"remoteAddr"`
 
-	Email     string `json:"email"`
-	Password  string `json:"password"`
-	FirstName string `json:"firstName"`
-	LastName  string `json:"lastName"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
+	Name     string `json:"name"`
 }
 
 // SignInRequest ...
@@ -33,11 +32,10 @@ type SignUpResponse struct {
 
 // SignInResponse ...
 type SignInResponse struct {
-	Token     string `json:"token"`
-	Email     string `json:"email"`
-	FirstName string `json:"firstName"`
-	LastName  string `json:"lastName"`
-	Role      string `json:"role"`
+	Token string `json:"token"`
+	Email string `json:"email"`
+	Name  string `json:"name"`
+	Role  string `json:"role"`
 }
 
 // Endpoints ...

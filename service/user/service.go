@@ -44,8 +44,7 @@ func (s service) SignUp(r SignUpRequest) *model.JSONResponse {
 
 	if util.IsEmpty(r.Email) ||
 		util.IsEmpty(r.Password) ||
-		util.IsEmpty(r.FirstName) ||
-		util.IsEmpty(r.LastName) {
+		util.IsEmpty(r.Name) {
 		response.Error = util.MakeError(consts.ErrorBadRequestCode, "입력 정보를 확인해주세요.", http.StatusBadRequest)
 		return &response
 	}
@@ -53,10 +52,9 @@ func (s service) SignUp(r SignUpRequest) *model.JSONResponse {
 	pw := util.GenerateFromPassword(r.Password)
 
 	m := db.User{
-		Email:     r.Email,
-		Password:  pw,
-		FirstName: r.FirstName,
-		LastName:  r.LastName,
+		Email:    r.Email,
+		Password: pw,
+		Name:     r.Name,
 	}
 	if result := <-s.userRepo.Create(m); result.Err != nil {
 		s.logger.Log("UER_CREATE_ERROR", result.Err.Error())
@@ -90,11 +88,10 @@ func (s service) SignIn(r SignInRequest) *model.JSONResponse {
 
 	// JWT 토큰 Redis에 저장
 	jwtParameter := &model.Jwt{
-		UserID:    user.ID,
-		Email:     user.Email,
-		FirstName: user.FirstName,
-		LastName:  user.LastName,
-		Role:      user.Role,
+		UserID: user.ID,
+		Email:  user.Email,
+		Name:   user.Name,
+		Role:   user.Role,
 	}
 	const oneWeekTime = 3600 * 24 * 7
 	token, _ := jwt.GenerateToken(jwtParameter, oneWeekTime)
@@ -104,11 +101,10 @@ func (s service) SignIn(r SignInRequest) *model.JSONResponse {
 	redisCli.SetValue(r.Email, token, oneWeekTime)
 
 	response.Result.Data = SignInResponse{
-		Email:     user.Email,
-		FirstName: user.FirstName,
-		LastName:  user.LastName,
-		Role:      user.Role,
-		Token:     token,
+		Email: user.Email,
+		Name:  user.Name,
+		Role:  user.Role,
+		Token: token,
 	}
 
 	return &response

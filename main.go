@@ -6,8 +6,11 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/go-kit/kit/endpoint"
+
 	"github.com/TylerGrey/lotte_server/db"
 	"github.com/TylerGrey/lotte_server/lib/mysql"
+	boardApi "github.com/TylerGrey/lotte_server/service/board"
 	userApi "github.com/TylerGrey/lotte_server/service/user"
 	"github.com/go-kit/kit/log"
 	"github.com/sebest/xff"
@@ -35,12 +38,19 @@ func main() {
 		panic(err)
 	}
 	userRepo := db.NewUserRepository(dbCli)
+	boardRepo := db.NewBoardRepository(dbCli)
 
 	// API 설정
 	var userService userApi.Service
 	{
 		userService = userApi.NewService(ctx, logger, userRepo)
 		userService = userApi.NewLoggingService(log.With(logger, "api", "user"), userService)
+	}
+
+	var boardService boardApi.Service
+	{
+		boardService = boardApi.NewService(ctx, logger, boardRepo)
+		boardService = boardApi.NewLoggingService(log.With(logger, "api", "board"), boardService)
 	}
 
 	// Endpoint 설정
@@ -52,12 +62,26 @@ func main() {
 		SignInEndpoint: userSignInEndpoint,
 	}
 
+	boardListEndpoint := boardApi.MakeListEndpoint(boardService)
+	var boardAddEndpoint endpoint.Endpoint
+	{
+		boardAddEndpoint = boardApi.MakeAddEndpoint(boardService)
+		boardAddEndpoint = boardApi.MakeAuthVerifyMiddleware()(boardAddEndpoint)
+	}
+
+	boardEndpoints := boardApi.Endpoints{
+		ListEndpoint: boardListEndpoint,
+		AddEndpoint:  boardAddEndpoint,
+	}
+
 	// 핸들러 설정
 	userRoute := userApi.MakeHTTPHandler(userEndpoints, logger)
+	boardRoute := boardApi.MakeHTTPHandler(boardEndpoints, logger)
 
 	xffmw, _ := xff.Default()
 	mux := http.NewServeMux()
 	mux.Handle("/api/user/", xffmw.Handler(userRoute))
+	mux.Handle("/api/board/", xffmw.Handler(boardRoute))
 	http.Handle("/", accessControl(mux))
 
 	logger.Log(http.ListenAndServe(*httpAddr, nil))
