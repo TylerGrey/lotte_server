@@ -27,10 +27,7 @@ type AddRequest struct {
 	UserID     int64  `json:"userId"`
 	RemoteAddr string `json:"remoteAddr"`
 
-	Name            string `json:"name"`
-	IsEnableHoliday string `json:"is_enable_holiday"`
-	MinEnableTime   string `json:"min_enable_time"`
-	MaxEnableTime   string `json:"max_enable_time"`
+	Name string `json:"name"`
 }
 
 // UpdateRequest ...
@@ -50,7 +47,7 @@ type DeleteRequest struct {
 	UserID     int64  `json:"userId"`
 	RemoteAddr string `json:"remoteAddr"`
 
-	ID string `json:"id"`
+	ID int64 `json:"id"`
 }
 
 // ListResponse ...
@@ -113,8 +110,6 @@ func MakeAddEndpoint(s Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(AddRequest)
 
-		req.UserID = int64(ctx.Value("userId").(float64))
-
 		response := s.Add(req)
 		return response, nil
 	}
@@ -125,8 +120,6 @@ func MakeUpdateEndpoint(s Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(UpdateRequest)
 
-		req.UserID = int64(ctx.Value("userId").(float64))
-
 		response := s.Update(req)
 		return response, nil
 	}
@@ -136,8 +129,6 @@ func MakeUpdateEndpoint(s Service) endpoint.Endpoint {
 func MakeDeleteEndpoint(s Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(DeleteRequest)
-
-		req.UserID = int64(ctx.Value("userId").(float64))
 
 		response := s.Delete(req)
 		return response, nil

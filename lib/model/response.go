@@ -9,4 +9,5 @@ type ReservationList struct {
 	EndDatetime   string `json:"end_datetime"`
 	Title         string `json:"title"`
 	UserName      string `json:"user_name"`
+	Status        string `json:"status"`
 }

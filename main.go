@@ -73,27 +73,29 @@ func main() {
 	}
 
 	roomListEndpoint := roomApi.MakeListEndpoint(roomService)
-	var roomAddEndpoint endpoint.Endpoint
-	{
-		roomAddEndpoint = roomApi.MakeAddEndpoint(roomService)
-		roomAddEndpoint = roomApi.MakeAuthVerifyMiddleware()(roomAddEndpoint)
-	}
+	roomAddEndpoint := roomApi.MakeAddEndpoint(roomService)
+	roomDeleteEndpoint := roomApi.MakeDeleteEndpoint(roomService)
 
 	roomEndpoints := roomApi.Endpoints{
-		ListEndpoint: roomListEndpoint,
-		AddEndpoint:  roomAddEndpoint,
+		ListEndpoint:   roomListEndpoint,
+		AddEndpoint:    roomAddEndpoint,
+		DeleteEndpoint: roomDeleteEndpoint,
 	}
 
 	reservationListEndpoint := reservationApi.MakeListEndpoint(reservationService)
+	reservationFindEndpoint := reservationApi.MakeFindEndpoint(reservationService)
 	var reservationAddEndpoint endpoint.Endpoint
 	{
 		reservationAddEndpoint = reservationApi.MakeAddEndpoint(reservationService)
 		reservationAddEndpoint = reservationApi.MakeAuthVerifyMiddleware()(reservationAddEndpoint)
 	}
+	reservationUpdateStatusEndpoint := reservationApi.MakeUpdateStatusEndpoint(reservationService)
 
 	reservationEndpoints := reservationApi.Endpoints{
-		ListEndpoint: reservationListEndpoint,
-		AddEndpoint:  reservationAddEndpoint,
+		ListEndpoint:         reservationListEndpoint,
+		AddEndpoint:          reservationAddEndpoint,
+		FindEndpoint:         reservationFindEndpoint,
+		UpdateStatusEndpoint: reservationUpdateStatusEndpoint,
 	}
 
 	// 핸들러 설정

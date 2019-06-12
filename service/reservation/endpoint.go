@@ -31,6 +31,23 @@ type AddRequest struct {
 	Attachments   string  `json:"attachments"`
 }
 
+// FindRequest ...
+type FindRequest struct {
+	UserID     int64  `json:"userId"`
+	RemoteAddr string `json:"remoteAddr"`
+
+	ID int64 `json:"id"`
+}
+
+// UpdateStatusRequest ...
+type UpdateStatusRequest struct {
+	UserID     int64  `json:"userId"`
+	RemoteAddr string `json:"remoteAddr"`
+
+	ID     int64  `json:"id"`
+	Status string `json:"status"`
+}
+
 // ListResponse ...
 type ListResponse struct {
 	List []*model.ReservationList `json:"list"`
@@ -41,10 +58,22 @@ type AddResponse struct {
 	ID int64 `json:"id"`
 }
 
+// FindResponse ...
+type FindResponse struct {
+	Reservation *model.ReservationList `json:"reservation"`
+}
+
+// UpdateStatusResponse
+type UpdateStatusResponse struct {
+	ID int64 `json:"id"`
+}
+
 // Endpoints ...
 type Endpoints struct {
-	ListEndpoint endpoint.Endpoint
-	AddEndpoint  endpoint.Endpoint
+	ListEndpoint         endpoint.Endpoint
+	AddEndpoint          endpoint.Endpoint
+	FindEndpoint         endpoint.Endpoint
+	UpdateStatusEndpoint endpoint.Endpoint
 }
 
 // MakeAuthVerifyMiddleware ...
@@ -82,6 +111,26 @@ func MakeAddEndpoint(s Service) endpoint.Endpoint {
 		req.UserID = int64(ctx.Value("userId").(float64))
 
 		response := s.Add(req)
+		return response, nil
+	}
+}
+
+// MakeFindEndpoint ...
+func MakeFindEndpoint(s Service) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req := request.(FindRequest)
+
+		response := s.Find(req)
+		return response, nil
+	}
+}
+
+// MakeUpdateStatusEndpoint ...
+func MakeUpdateStatusEndpoint(s Service) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req := request.(UpdateStatusRequest)
+
+		response := s.UpdateStatus(req)
 		return response, nil
 	}
 }

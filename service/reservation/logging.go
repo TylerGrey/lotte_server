@@ -67,3 +67,53 @@ func (s *loggingService) Add(r AddRequest) (output *model.JSONResponse) {
 
 	return
 }
+
+func (s *loggingService) Find(r FindRequest) (output *model.JSONResponse) {
+	var (
+		outputJSON []byte
+		errorJSON  []byte
+		startTime  = time.Now()
+	)
+	requestJSON, _ := json.Marshal(r)
+
+	output = s.Service.Find(r)
+	outputJSON, _ = json.Marshal(output.Result.Data)
+	errorJSON, _ = json.Marshal(output.Error)
+	defer func(begin time.Time) {
+		s.logger.Log(
+			"method", "Find",
+			"remoteAddr", r.RemoteAddr,
+			"request", string(requestJSON),
+			"result", string(outputJSON),
+			"error", string(errorJSON),
+			"took", time.Since(begin).Seconds(),
+		)
+	}(startTime)
+
+	return
+}
+
+func (s *loggingService) UpdateStatus(r UpdateStatusRequest) (output *model.JSONResponse) {
+	var (
+		outputJSON []byte
+		errorJSON  []byte
+		startTime  = time.Now()
+	)
+	requestJSON, _ := json.Marshal(r)
+
+	output = s.Service.UpdateStatus(r)
+	outputJSON, _ = json.Marshal(output.Result.Data)
+	errorJSON, _ = json.Marshal(output.Error)
+	defer func(begin time.Time) {
+		s.logger.Log(
+			"method", "UpdateStatus",
+			"remoteAddr", r.RemoteAddr,
+			"request", string(requestJSON),
+			"result", string(outputJSON),
+			"error", string(errorJSON),
+			"took", time.Since(begin).Seconds(),
+		)
+	}(startTime)
+
+	return
+}

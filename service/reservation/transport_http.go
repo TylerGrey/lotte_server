@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"strconv"
 
 	"github.com/TylerGrey/lotte_server/lib/model"
 	"github.com/TylerGrey/lotte_server/util"
@@ -40,10 +41,24 @@ func MakeHTTPHandler(endpoints Endpoints, logger kitlog.Logger) http.Handler {
 		encodeResponse,
 		opts...,
 	)
+	FindHandler := httptransport.NewServer(
+		endpoints.FindEndpoint,
+		decodeFindRequest,
+		encodeResponse,
+		opts...,
+	)
+	UpdateStatusHandler := httptransport.NewServer(
+		endpoints.UpdateStatusEndpoint,
+		decodeUpdateStatusRequest,
+		encodeResponse,
+		opts...,
+	)
 
 	m := mux.NewRouter()
 	m.Handle("/api/reservation/list", ListHandler).Methods("GET")
 	m.Handle("/api/reservation/add", AddHandler).Methods("POST")
+	m.Handle("/api/reservation/find", FindHandler).Methods("GET")
+	m.Handle("/api/reservation/status", UpdateStatusHandler).Methods("POST")
 
 	return m
 }
@@ -57,6 +72,26 @@ func decodeListRequest(_ context.Context, r *http.Request) (interface{}, error) 
 
 func decodeAddRequest(_ context.Context, r *http.Request) (interface{}, error) {
 	request := AddRequest{}
+	request.RemoteAddr = r.RemoteAddr
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		return nil, err
+	}
+
+	return request, nil
+}
+
+func decodeFindRequest(_ context.Context, r *http.Request) (interface{}, error) {
+	id, _ := strconv.Atoi(r.URL.Query().Get("id"))
+	request := FindRequest{
+		ID: int64(id),
+	}
+	request.RemoteAddr = r.RemoteAddr
+
+	return request, nil
+}
+
+func decodeUpdateStatusRequest(_ context.Context, r *http.Request) (interface{}, error) {
+	request := UpdateStatusRequest{}
 	request.RemoteAddr = r.RemoteAddr
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 		return nil, err

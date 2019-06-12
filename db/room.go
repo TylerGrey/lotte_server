@@ -10,19 +10,20 @@ import (
 
 // Room 회의실
 type Room struct {
-	ID            int64      `json:"id" sql:"AUTO_INCREMENT" gorm:"primary_key"`
-	Name          string     `json:"name"`
+	ID              int64      `json:"id" sql:"AUTO_INCREMENT" gorm:"primary_key"`
+	Name            string     `json:"name"`
 	IsEnableHoliday string     `json:"is_enable_holiday"`
-	MinEnableTime string     `json:"min_enable_time"`
-	MaxEnableTime string     `json:"max_enable_time"`
-	CreatedAt     time.Time  `json:"created_at"`
-	UpdatedAt     time.Time  `json:"updated_at"`
-	DeletedAt     *time.Time `json:"deleted_at"`
+	MinEnableTime   string     `json:"min_enable_time"`
+	MaxEnableTime   string     `json:"max_enable_time"`
+	CreatedAt       time.Time  `json:"created_at"`
+	UpdatedAt       time.Time  `json:"updated_at"`
+	DeletedAt       *time.Time `json:"deleted_at"`
 }
 
 // RoomRepository User 레포지터리 인터페이스
 type RoomRepository interface {
 	Create(room Room) model.DbChannel
+	Delete(id int64) model.DbChannel
 	List(page int32, limit int32) model.DbChannel
 }
 
@@ -38,7 +39,7 @@ func NewRoomRepository(masterSession *gorm.DB) RoomRepository {
 	}
 }
 
-// Create 게시글 생성
+// Create 회의실 생성
 func (r roomRepository) Create(room Room) model.DbChannel {
 	storeChannel := make(model.DbChannel)
 	go func() {
@@ -56,14 +57,33 @@ func (r roomRepository) Create(room Room) model.DbChannel {
 	return storeChannel
 }
 
-// List 게시글 리스트 조회
+// Delete 회의실 제거
+func (r roomRepository) Delete(id int64) model.DbChannel {
+	storeChannel := make(model.DbChannel)
+	go func() {
+		result := model.DbResult{}
+		room := Room{}
+		err := r.session.Table("room").Where("id = ?", id).Delete(&room).Error
+		if err != nil {
+			result.Err = err
+		}
+
+		result.Data = room.ID
+		storeChannel <- result
+		close(storeChannel)
+	}()
+
+	return storeChannel
+}
+
+// List 회의실 리스트 조회
 func (r roomRepository) List(page int32, limit int32) model.DbChannel {
 	storeChannel := make(model.DbChannel)
 	go func() {
 		result := model.DbResult{}
 		rooms := []*Room{}
 
-		err := r.session.Table("room").Scan(&rooms).Error
+		err := r.session.Table("room").Find(&rooms).Error
 		if err != nil {
 			result.Err = err
 		}
